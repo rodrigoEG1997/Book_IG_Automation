@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_quotes_books
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}       
+      MYSQL_DATABASE: ${MYSQL_DATABASE} 
+      MYSQL_USER: ${MYSQL_USER}              
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}           
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  data:
+    build: ./Data
+    env_file:
+      - .env
+    profiles: ["full-setup", "data-only"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+    - ./Data:/app
+    - ./logs:/app/logs
+    - ./Data/media/autor_img:/app/media/autor_img
+    - ./Data/media/backgrounds:/app/media/backgrounds
+    - ./Data/media/cover_books:/app/media/cover_books
+    restart: "no"
+
+volumes:
+  mysql_data:

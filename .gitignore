@@ -1,0 +1,48 @@
+# ── Secretos ────────────────────────────────────────────
+.env
+.env.*
+docker-compose.override.yml
+
+# ── Python ───────────────────────────────────────────────
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
+
+# ── Imágenes descargadas / generadas ─────────────────────
+Data/media/backgrounds/*
+Data/media/autor_img/*
+Data/media/cover_books/*
+Data/quote_post.png
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# ── Logs ─────────────────────────────────────────────────
+logs/
+*.log
+
+# ── macOS ─────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ── IDEs ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Docker (datos persistentes locales) ──────────────────
+mysql_data/
