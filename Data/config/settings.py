@@ -80,3 +80,16 @@ SANS_FALLBACKS = [
 CANVAS_W = 1080
 CANVAS_H = 1350
 PADDING  = 80
+
+#IG_SETTINGS
+FB_PAGE_ID=os.environ.get("FB_PAGE_ID")
+INSTAGRAM_USER_ID=os.environ.get("INSTAGRAM_USER_ID")
+TEMP_TOKEN=os.environ.get("TEMP_TOKEN")
+IG_SECRET=os.environ.get("IG_SECRET")
+IG_APP_ID=os.environ.get("IG_APP_ID")
+
+#POST VARIABLES
+POST_BASE_URL=os.environ.get("POST_BASE_URL")
+POST_MEDIA_FOLDER = os.path.join(os.path.dirname(__file__), "..", "media", "post")
+API_VERSION="v25.0"
+IG_USER_ID = os.getenv("INSTAGRAM_USER_ID")

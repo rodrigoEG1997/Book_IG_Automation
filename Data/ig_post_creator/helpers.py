@@ -75,7 +75,7 @@ def create_img_book(origin_path, post_path):
 
     bg.save(post_path, quality=97)
 
-def create_author_img(origin_path, post_path, description):
+def create_author_img(origin_path, post_path, description, name):
     img = Image.open(origin_path).convert("RGB")
 
     # ── Cover crop to fill canvas ─────────────────────────────
@@ -101,38 +101,42 @@ def create_author_img(origin_path, post_path, description):
 
     canvas = Image.alpha_composite(canvas, gradient)
 
-    # ── Description text ──────────────────────────────────────
+    # ── Text ──────────────────────────────────────────────────
     draw      = ImageDraw.Draw(canvas)
     margin    = int(CANVAS_W * 0.08)
     max_w     = CANVAS_W - margin * 2
 
-    main, parenthetical = _split_parenthetical(description)
+    desc_main, parenthetical = _split_parenthetical(description)
 
-    font_main  = _load_serif(int(CANVAS_W * 0.052), index=1)   # Palatino Italic
-    font_small = _load_serif(int(CANVAS_W * 0.036), index=0)   # Palatino Regular
-    line_h1    = int(CANVAS_W * 0.052 * 1.5)
-    line_h2    = int(CANVAS_W * 0.036 * 1.5)
-    gap        = int(CANVAS_H * 0.025)
+    font_name  = _load_serif(int(CANVAS_W * 0.065), index=1)   # Palatino Italic – large
+    font_desc  = _load_serif(int(CANVAS_W * 0.036), index=0)   # Palatino Regular – small
+    line_h_name = int(CANVAS_W * 0.065 * 1.4)
+    line_h_desc = int(CANVAS_W * 0.036 * 1.5)
+    gap         = int(CANVAS_H * 0.022)
 
-    lines_main  = _wrap_text(main, font_main, max_w, draw)
-    lines_small = _wrap_text(parenthetical, font_small, max_w, draw) if parenthetical else []
+    lines_name  = _wrap_text(name, font_name, max_w, draw)
+    lines_desc  = _wrap_text(desc_main, font_desc, max_w, draw)
+    lines_paren = _wrap_text(parenthetical, font_desc, max_w, draw) if parenthetical else []
 
-    total_h = len(lines_main) * line_h1
-    if lines_small:
-        total_h += gap + len(lines_small) * line_h2
+    all_desc_lines = lines_desc + lines_paren   # description + parenthetical together
 
-    y = CANVAS_H - margin - total_h
+    total_h = (len(lines_name) * line_h_name
+               + gap + len(all_desc_lines) * line_h_desc)
 
-    for line in lines_main:
-        x = (CANVAS_W - draw.textlength(line, font=font_main)) // 2
-        _draw_text_with_shadow(draw, (x, y), line, font_main, fill=(255, 255, 255, 240))
-        y += line_h1
+    # Don't let the block start above 72% of the canvas (avoids covering the face)
+    min_y   = int(CANVAS_H * 0.72)
+    y       = max(min_y, CANVAS_H - margin - total_h)
 
-    if lines_small:
-        y += gap
-        for line in lines_small:
-            x = (CANVAS_W - draw.textlength(line, font=font_small)) // 2
-            _draw_text_with_shadow(draw, (x, y), line, font_small, fill=(220, 220, 220, 210))
-            y += line_h2
+    for line in lines_name:
+        x = (CANVAS_W - draw.textlength(line, font=font_name)) // 2
+        _draw_text_with_shadow(draw, (x, y), line, font_name, fill=(255, 255, 255, 240))
+        y += line_h_name
+
+    y += gap
+
+    for line in all_desc_lines:
+        x = (CANVAS_W - draw.textlength(line, font=font_desc)) // 2
+        _draw_text_with_shadow(draw, (x, y), line, font_desc, fill=(220, 220, 220, 220))
+        y += line_h_desc
 
     canvas.convert("RGB").save(post_path, quality=97)

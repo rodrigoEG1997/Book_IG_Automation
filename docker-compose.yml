@@ -38,6 +38,7 @@ services:
     - ./Data/media/autor_img:/app/media/autor_img
     - ./Data/media/backgrounds:/app/media/backgrounds
     - ./Data/media/cover_books:/app/media/cover_books
+    - ./Data/media/post:/app/media/post
     restart: "no"
 
 volumes:

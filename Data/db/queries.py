@@ -73,3 +73,21 @@ def update_background(connection, cursor, num_bg):
     query = "UPDATE Variables SET value = %s WHERE name = 'count_background';"
     cursor.execute(query, (num_bg,))
     connection.commit()
+
+def create_long_token(connection, cursor, long_token):
+    query = "INSERT INTO Variables (name, value) " \
+    "    VALUES (%s, %s)"
+    cursor.execute(query, 
+                ("INSTAGRAM_LONG_TOKEN", long_token))
+    connection.commit()
+
+def update_long_token(connection, cursor, long_token):
+    query = "UPDATE Variables SET value = %s WHERE name = 'INSTAGRAM_LONG_TOKEN';"
+    cursor.execute(query, (long_token,))
+    connection.commit()
+
+def get_long_token(cursor):
+    query = "SELECT value FROM Variables WHERE name = 'INSTAGRAM_LONG_TOKEN';"
+    cursor.execute(query)
+    result = cursor.fetchone()
+    return result[0] if result else None

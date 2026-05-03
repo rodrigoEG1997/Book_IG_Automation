@@ -7,5 +7,4 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
-# CMD ["python", "get_backgrounds.py"]
-CMD ["python", "get_autors_books.py"]
+CMD ["python", "exec_data_setup.py"]

@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS Books (
 CREATE TABLE IF NOT EXISTS Variables (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(50),
-  value INT
+  value VARCHAR(400)
 );
 
 INSERT INTO Variables (name, value) VALUES ('count_background', 1);
