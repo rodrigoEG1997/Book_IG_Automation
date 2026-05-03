@@ -73,21 +73,21 @@ ensure_dirs() {
 # ── Tear down existing containers and volumes ─────────────────────────────────
 teardown() {
     info "Removing existing containers and volumes..."
-    docker compose -f "$APP_DIR/$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null || true
+    docker compose down -v --remove-orphans 2>/dev/null || true
     info "Teardown complete."
 }
 
 # ── Build images ──────────────────────────────────────────────────────────────
 build() {
     info "Building Docker images..."
-    docker compose -f "$APP_DIR/$COMPOSE_FILE" build --no-cache
+    docker compose --profile data-only build --no-cache
     info "Build complete."
 }
 
 # ── Start MySQL and wait for healthy ──────────────────────────────────────────
 start_db() {
     info "Starting MySQL..."
-    docker compose -f "$APP_DIR/$COMPOSE_FILE" up -d mysql
+    docker compose up -d mysql
 
     info "Waiting for MySQL to be healthy..."
     local attempts=0
@@ -104,7 +104,7 @@ start_db() {
 # ── Initial data setup (backgrounds + authors/books/quotes) ───────────────────
 run_setup() {
     info "Running initial data setup — this may take several hours..."
-    docker compose -f "$APP_DIR/$COMPOSE_FILE" --profile data-only run --rm data
+    docker compose --profile data-only run --rm data
     info "Data setup complete."
 }
 
@@ -198,7 +198,7 @@ print_summary() {
     echo ""
     echo "  MySQL logs:    docker logs mysql_quotes_books -f"
     echo "  Media server:  tail -f $APP_DIR/logs/media_server.log"
-    echo "  Stop all:      docker compose -f $APP_DIR/$COMPOSE_FILE down"
+    echo "  Stop all:      docker compose down"
     echo ""
 }
 
