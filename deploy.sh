@@ -167,11 +167,13 @@ start_media_server() {
         fi
     fi
 
-    # Register @reboot cron so the server restarts after VM reboot
-    local reboot_cmd="@reboot python3 -m http.server $port --directory $serve_dir >> $log_file 2>&1"
-    if ! crontab -l 2>/dev/null | grep -q "http.server"; then
-        (crontab -l 2>/dev/null; echo "$reboot_cmd") | crontab -
-        info "Media server registered in crontab (@reboot)."
+    # Register @reboot cron so the server restarts after VM reboot (Linux only)
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        local reboot_cmd="@reboot python3 -m http.server $port --directory $serve_dir >> $log_file 2>&1"
+        if ! crontab -l 2>/dev/null | grep -q "http.server"; then
+            (crontab -l 2>/dev/null; echo "$reboot_cmd") | crontab -
+            info "Media server registered in crontab (@reboot)."
+        fi
     fi
 }
 
@@ -186,8 +188,9 @@ print_summary() {
     echo -e "    ${GREEN}${MEDIA_SERVER_URL:-http://<PUBLIC_IP>:8000}${NC}"
     echo ""
     if ! $RUN_SETUP; then
-        echo "  NEXT STEP: wait for the DB to be populated, then run:"
+        echo "  FIRST DEPLOY? Populate the DB now with:"
         echo "    ./deploy.sh --setup"
+        echo "  (this downloads backgrounds, authors, books — takes a while)"
         echo ""
     fi
     echo "  Once the DB is ready, start the automation:"
