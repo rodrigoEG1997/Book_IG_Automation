@@ -120,8 +120,12 @@ start_media_server() {
         info "Stopping existing media server (PID $(cat "$pid_file"))..."
         kill "$(cat "$pid_file")" || true
     fi
-    # Also kill any stray process on the port
-    fuser -k "${port}/tcp" 2>/dev/null || true
+    # Kill any stray process on the port (macOS: lsof, Linux: fuser)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        lsof -ti :"$port" 2>/dev/null | xargs kill -9 2>/dev/null || true
+    else
+        fuser -k "${port}/tcp" 2>/dev/null || true
+    fi
 
     # Start server in background from the post directory
     nohup python3 -m http.server "$port" --directory "$serve_dir" \
@@ -146,7 +150,11 @@ start_media_server() {
         MEDIA_SERVER_URL="http://${public_ip}:${port}"
         # Update POST_BASE_URL in .env
         if grep -q "^POST_BASE_URL=" "$APP_DIR/.env"; then
-            sed -i "s|^POST_BASE_URL=.*|POST_BASE_URL=${MEDIA_SERVER_URL}|" "$APP_DIR/.env"
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "s|^POST_BASE_URL=.*|POST_BASE_URL=${MEDIA_SERVER_URL}|" "$APP_DIR/.env"
+            else
+                sed -i "s|^POST_BASE_URL=.*|POST_BASE_URL=${MEDIA_SERVER_URL}|" "$APP_DIR/.env"
+            fi
             info "Updated POST_BASE_URL in .env → $MEDIA_SERVER_URL"
         else
             echo "POST_BASE_URL=${MEDIA_SERVER_URL}" >> "$APP_DIR/.env"
