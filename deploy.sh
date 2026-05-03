@@ -147,7 +147,12 @@ start_media_server() {
         warn "Could not determine public IP automatically. Set POST_BASE_URL manually in .env"
         MEDIA_SERVER_URL="http://<YOUR_VM_PUBLIC_IP>:${port}"
     else
-        MEDIA_SERVER_URL="http://${public_ip}:${port}"
+        # Wrap IPv6 addresses in brackets for valid URL format
+        if [[ "$public_ip" == *:* ]]; then
+            MEDIA_SERVER_URL="http://[${public_ip}]:${port}"
+        else
+            MEDIA_SERVER_URL="http://${public_ip}:${port}"
+        fi
         # Update POST_BASE_URL in .env
         if grep -q "^POST_BASE_URL=" "$APP_DIR/.env"; then
             if [[ "$OSTYPE" == "darwin"* ]]; then
