@@ -2,7 +2,7 @@ import logging
 import requests
 import time
 from config.settings import AUTHRDS_IMG_PATH, BOOK_IMG_PATH
-from config.authors_quotes import TEST_AUTHORS
+from config.authors_quotes import AUTHORS
 from db.connection import get_connection
 from db import queries
 from db.modules.author import Author
@@ -20,7 +20,7 @@ from goodreads.client import GoodreadsClient
 
 def get_books(connection, cursor, clientWikipedia, clientOpenLibrary, clientGoodreads):
 
-    for name in TEST_AUTHORS:
+    for name in AUTHORS:
         try:
             author, img_author = get_authors(clientWikipedia, name)
             id_author = OpenLibraryHelpers.search_author(clientOpenLibrary, name)
