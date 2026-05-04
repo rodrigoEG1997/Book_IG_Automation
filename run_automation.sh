@@ -33,15 +33,19 @@ check_db() {
 # ── Run automation once immediately ──────────────────────────────────────────
 run_now() {
     info "Running main_automation.py now..."
-    docker compose -f "$APP_DIR/$COMPOSE_FILE" --profile data-only run --rm data \
-        python main_automation.py
+    docker compose --profile data-only run --rm data python main_automation.py
     info "Automation run complete."
 }
 
 # ── Install cron jobs (08:00 and 18:00 Dublin time) ───────────────────────────
 setup_cron() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        warn "Cron setup skipped on macOS (run this on the Ubuntu VM for scheduling)."
+        return
+    fi
+
     local log_file="$APP_DIR/logs/automation.log"
-    local cron_cmd="cd $APP_DIR && docker compose -f $COMPOSE_FILE --profile data-only run --rm data python main_automation.py >> $log_file 2>&1"
+    local cron_cmd="cd $APP_DIR && docker compose --profile data-only run --rm data python main_automation.py >> $log_file 2>&1"
 
     if crontab -l 2>/dev/null | grep -q "main_automation.py"; then
         warn "Cron jobs already exist — skipping. Edit with: crontab -e"
