@@ -92,7 +92,7 @@ start_db() {
     info "Waiting for MySQL to be healthy..."
     local attempts=0
     until [[ "$(docker inspect --format='{{.State.Health.Status}}' mysql_quotes_books 2>/dev/null)" == "healthy" ]]; do
-        ((attempts++))
+        attempts=$((attempts + 1))
         [[ $attempts -gt 30 ]] && error "MySQL did not become healthy after 90s. Run: docker logs mysql_quotes_books"
         echo -n "."
         sleep 3
