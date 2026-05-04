@@ -171,7 +171,7 @@ start_media_server() {
     if [[ "$OSTYPE" != "darwin"* ]]; then
         local reboot_cmd="@reboot python3 -m http.server $port --directory $serve_dir >> $log_file 2>&1"
         if ! crontab -l 2>/dev/null | grep -q "http.server"; then
-            (crontab -l 2>/dev/null; echo "$reboot_cmd") | crontab -
+            (crontab -l 2>/dev/null || true; echo "$reboot_cmd") | crontab -
             info "Media server registered in crontab (@reboot)."
         fi
     fi

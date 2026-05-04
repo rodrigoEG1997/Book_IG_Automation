@@ -54,7 +54,7 @@ setup_cron() {
 
     # CRON_TZ makes cron interpret the schedules in Dublin time (handles DST automatically)
     (
-        crontab -l 2>/dev/null
+        crontab -l 2>/dev/null || true
         echo "CRON_TZ=$CRON_TZ"
         echo "$CRON_SCHEDULE_MORNING $cron_cmd"
         echo "$CRON_SCHEDULE_EVENING $cron_cmd"
