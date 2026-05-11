@@ -9,6 +9,8 @@ _PUBLISH_WAIT_SECONDS  = 10
 _PUBLISH_MAX_RETRIES   = 10
 _PUBLISH_RETRY_WAIT    = 30
 _PUBLISH_MAX_PUB_TRIES = 5
+_ITEM_MAX_RETRIES      = 3
+_ITEM_RETRY_WAIT       = 20
 
 
 def _wait_until_ready(media_id, access_token):
@@ -38,17 +40,25 @@ def post_book(caption, LONG_TOKEN):
     # Step 1: Create a carousel item container for each image
     item_ids = []
     for filename in ordered_images:
-        url = POST_BASE_URL + filename
+        url = POST_BASE_URL + filename + f"?t={int(time.time())}"
         payload = {
             "image_url": url,
             "is_carousel_item": "true",
             "access_token": LONG_TOKEN,
         }
-        res = requests.post(
-            f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media",
-            data=payload,
-        ).json()
-        print(f"  Item container [{filename}]:", res)
+        for item_attempt in range(1, _ITEM_MAX_RETRIES + 1):
+            res = requests.post(
+                f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media",
+                data=payload,
+            ).json()
+            print(f"  Item container [{filename}] attempt {item_attempt}:", res)
+            if "id" in res:
+                break
+            if item_attempt < _ITEM_MAX_RETRIES:
+                print(f"  Retrying in {_ITEM_RETRY_WAIT}s...")
+                time.sleep(_ITEM_RETRY_WAIT)
+        else:
+            raise RuntimeError(f"Failed to create item container for {filename} after {_ITEM_MAX_RETRIES} attempts: {res}")
         item_ids.append(res["id"])
 
     # Step 2: Create the carousel container
@@ -81,7 +91,7 @@ def post_book(caption, LONG_TOKEN):
 
         if "error" not in published:
             print("Published:", published)
-            return
+            return published["id"]
 
         print(f"  Publish attempt {pub_attempt}/{_PUBLISH_MAX_PUB_TRIES} failed: {published['error']['message']}")
         if pub_attempt < _PUBLISH_MAX_PUB_TRIES:

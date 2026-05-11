@@ -138,7 +138,7 @@ def create_quote_image(bg_path, quote, author, out_path):
 
     # ── Downscale to final output size ───────────────────────
     final = canvas.convert("RGB").resize((OUTPUT_W, OUTPUT_H), Image.LANCZOS)
-    final.save(out_path, quality=97)
+    final.save(out_path, quality=85)
     print(f"Saved → {out_path}  ({OUTPUT_W}×{OUTPUT_H} px)")
 
 def call_me():

@@ -141,4 +141,4 @@ def make_post(connection, cursor, base):
     queries.update_book_available(connection, cursor, id_book)
     queries.update_background(connection, cursor, num_bg)
 
-    return caption
+    return caption, author['name'], book['quote_1']

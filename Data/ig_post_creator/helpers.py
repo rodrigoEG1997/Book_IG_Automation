@@ -73,7 +73,7 @@ def create_img_book(origin_path, post_path):
     y = (CANVAS_H - book.height) // 2
     bg.paste(book, (x, y))
 
-    bg.save(post_path, quality=97)
+    bg.save(post_path, quality=85)
 
 def create_author_img(origin_path, post_path, description, name):
     img = Image.open(origin_path).convert("RGB")
@@ -139,4 +139,4 @@ def create_author_img(origin_path, post_path, description, name):
         _draw_text_with_shadow(draw, (x, y), line, font_desc, fill=(220, 220, 220, 220))
         y += line_h_desc
 
-    canvas.convert("RGB").save(post_path, quality=97)
+    canvas.convert("RGB").save(post_path, quality=85)
