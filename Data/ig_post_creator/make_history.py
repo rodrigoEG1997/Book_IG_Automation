@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import subprocess
@@ -109,7 +110,7 @@ def _create_story_image(book_path, output_path, author, quote):
     print(f"  Story image created: {output_path}")
 
 
-def _pick_random_song(base):
+def pick_random_song(base):
     songs_dir = os.path.join(base, _SONGS_PATH)
     songs = [f for f in os.listdir(songs_dir) if f.lower().endswith(".mp3")]
     if not songs:
@@ -148,7 +149,7 @@ def _get_permalink(post_id, access_token):
     return res["permalink"]
 
 
-def post_story(post_id, access_token, base, author, quote):
+def post_story(post_id, access_token, base, author, quote, song_path):
     permalink = _get_permalink(post_id, access_token)
     print(f"  Story link → {permalink}")
 
@@ -157,14 +158,14 @@ def post_story(post_id, access_token, base, author, quote):
     video_path = os.path.join(base, OUTPUT_POST, "story.mp4")
 
     _create_story_image(book_path, image_path, author, quote)
-    song_path = _pick_random_song(base)
     _create_story_video(image_path, song_path, video_path)
 
-    story_video_url = POST_BASE_URL + f"/story.mp4?t={int(time.time())}"
+    story_video_url = POST_BASE_URL + f"story.mp4?t={int(time.time())}"
 
     container_payload = {
         "media_type": "STORIES",
         "video_url":  story_video_url,
+        "link_sticker": json.dumps({"link": permalink}),
         "access_token": access_token,
     }
     container = requests.post(

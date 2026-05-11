@@ -32,17 +32,18 @@ def _wait_until_ready(media_id, access_token):
 
 def post_book(caption, LONG_TOKEN):
     all_files = os.listdir(POST_MEDIA_FOLDER)
-    quotes = sorted([f for f in all_files if f not in ("book.png", "author.png") and f.endswith(".png")])
-    ordered_images = ["book.png"] + quotes + ["author.png"]
+    quotes = sorted([f for f in all_files if f not in ("book.mp4", "author.mp4") and f.endswith(".mp4")])
+    ordered_media = ["book.mp4"] + quotes + ["author.mp4"]
 
-    print("Image order:", ordered_images)
+    print("Video order:", ordered_media)
 
-    # Step 1: Create a carousel item container for each image
+    # Step 1: Create a carousel item container for each video
     item_ids = []
-    for filename in ordered_images:
+    for filename in ordered_media:
         url = POST_BASE_URL + filename + f"?t={int(time.time())}"
         payload = {
-            "image_url": url,
+            "media_type": "VIDEO",
+            "video_url": url,
             "is_carousel_item": "true",
             "access_token": LONG_TOKEN,
         }
@@ -59,6 +60,8 @@ def post_book(caption, LONG_TOKEN):
                 time.sleep(_ITEM_RETRY_WAIT)
         else:
             raise RuntimeError(f"Failed to create item container for {filename} after {_ITEM_MAX_RETRIES} attempts: {res}")
+        # Videos need individual processing time before the carousel can be assembled
+        _wait_until_ready(res["id"], LONG_TOKEN)
         item_ids.append(res["id"])
 
     # Step 2: Create the carousel container

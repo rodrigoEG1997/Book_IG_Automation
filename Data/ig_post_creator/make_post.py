@@ -4,10 +4,32 @@ import os
 import glob
 import time
 import json
+import subprocess
 from config.settings import OUTPUT_POST, BACKGROUND_QUOTE
 import logging
 from db import queries
 from db.connection import get_connection
+
+_CAROUSEL_VIDEO_DURATION = 7
+
+
+def _create_carousel_video(image_path, song_path, output_path):
+    cmd = [
+        "ffmpeg", "-y",
+        "-loop", "1", "-i", image_path,
+        "-i", song_path,
+        "-vf", "scale=1080:1350:force_original_aspect_ratio=decrease,"
+               "pad=1080:1350:(ow-iw)/2:(oh-ih)/2:color=black",
+        "-c:v", "libx264", "-tune", "stillimage",
+        "-c:a", "aac", "-b:a", "192k",
+        "-t", str(_CAROUSEL_VIDEO_DURATION), "-shortest",
+        "-pix_fmt", "yuv420p",
+        output_path,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"ffmpeg failed for {output_path}:\n{result.stderr}")
+    print(f"  Carousel video created: {output_path}")
 
 
 def _is_clean_subject(s: str) -> bool:
@@ -97,7 +119,7 @@ def create_caption(book, author) -> str:
 
     return caption
 
-def make_post(connection, cursor, base):
+def make_post(connection, cursor, base, song_path):
 
     #Delete Old Post
     old_post = os.path.join(base, OUTPUT_POST, "*")
@@ -124,15 +146,23 @@ def make_post(connection, cursor, base):
         quote = book[f"quote_{i}"]
         output = f"quote_{i}.png"
         if quote:
-            create_quote_image(os.path.join(base, BACKGROUND_QUOTE, background), 
-                    quote, 
-                    author['name'], 
+            create_quote_image(os.path.join(base, BACKGROUND_QUOTE, background),
+                    quote,
+                    author['name'],
                     os.path.join(base, OUTPUT_POST, output))
 
     #Create Author Image
     path_book = author["img_author"].replace("Data", base, 1)
     author_post = os.path.join(base, OUTPUT_POST, "author.png")
     create_author_img(path_book, author_post, author["description"], author["name"])
+
+    #Convert images to videos with music
+    post_dir = os.path.join(base, OUTPUT_POST)
+    for img_file in sorted(os.listdir(post_dir)):
+        if img_file.endswith(".png"):
+            img_path = os.path.join(post_dir, img_file)
+            vid_path = os.path.join(post_dir, img_file.replace(".png", ".mp4"))
+            _create_carousel_video(img_path, song_path, vid_path)
 
     caption = create_caption(book, author)
 

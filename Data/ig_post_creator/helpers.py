@@ -1,6 +1,8 @@
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 from config.settings import CANVAS_W, CANVAS_H, PADDING, PALATINO, FONT_FALLBACKS, SANS_FALLBACKS
 from PIL import ImageFont
+import random
+_SONGS_PATH          = "media/songs"
 import os
 
 def _load_serif(size, index=1):
@@ -140,3 +142,12 @@ def create_author_img(origin_path, post_path, description, name):
         y += line_h_desc
 
     canvas.convert("RGB").save(post_path, quality=85)
+
+def pick_random_song(base):
+    songs_dir = os.path.join(base, _SONGS_PATH)
+    songs = [f for f in os.listdir(songs_dir) if f.lower().endswith(".mp3")]
+    if not songs:
+        raise RuntimeError(f"No .mp3 files found in {songs_dir}")
+    chosen = random.choice(songs)
+    print(f"  Song selected: {chosen}")
+    return os.path.join(songs_dir, chosen)

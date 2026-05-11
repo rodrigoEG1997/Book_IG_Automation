@@ -1,11 +1,8 @@
-from ig_post_creator.create_quote import create_quote_image
-from ig_post_creator.helpers import create_img_book, create_author_img
 from ig_post_creator.make_post import make_post
 from ig_connector.post_content import post_book
-from ig_post_creator.make_history import post_story
+from ig_post_creator.make_history import post_story, pick_random_song
 import os
 import sys
-import glob
 import time
 from config.settings import IG_APP_ID, IG_SECRET, TEMP_TOKEN
 import logging
@@ -60,14 +57,16 @@ if __name__ == "__main__":
 
         base = os.path.dirname(os.path.abspath(__file__))
         logging.info("Building post content...")
-        content, author, quote = make_post(connection, cursor, base)
+
+        song = pick_random_song(base)
+        content, author, quote = make_post(connection, cursor, base, song)
 
         logging.info("Publishing to Instagram...")
         post_id = post_book(content, token)
         logging.info("Post published successfully")
         time.sleep(10)
         logging.info("Publishing story...")
-        post_story(post_id, token, base, author, quote)
+        post_story(post_id, token, base, author, quote, song)
         logging.info("Story published successfully")
 
     except requests.exceptions.RequestException as e:
