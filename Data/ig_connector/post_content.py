@@ -9,8 +9,8 @@ _PUBLISH_WAIT_SECONDS  = 10
 _PUBLISH_MAX_RETRIES   = 10
 _PUBLISH_RETRY_WAIT    = 30
 _PUBLISH_MAX_PUB_TRIES = 5
-_ITEM_MAX_RETRIES      = 3
-_ITEM_RETRY_WAIT       = 20
+_ITEM_MAX_RETRIES      = 4
+_ITEM_RETRY_WAIT       = 30
 
 
 def _wait_until_ready(media_id, access_token):
@@ -40,29 +40,38 @@ def post_book(caption, LONG_TOKEN):
     # Step 1: Create a carousel item container for each video
     item_ids = []
     for filename in ordered_media:
-        url = POST_BASE_URL + filename + f"?t={int(time.time())}"
-        payload = {
-            "media_type": "VIDEO",
-            "video_url": url,
-            "is_carousel_item": "true",
-            "access_token": LONG_TOKEN,
-        }
         for item_attempt in range(1, _ITEM_MAX_RETRIES + 1):
+            url = POST_BASE_URL + filename + f"?t={int(time.time())}"
+            payload = {
+                "media_type": "VIDEO",
+                "video_url": url,
+                "is_carousel_item": "true",
+                "access_token": LONG_TOKEN,
+            }
             res = requests.post(
                 f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media",
                 data=payload,
             ).json()
             print(f"  Item container [{filename}] attempt {item_attempt}:", res)
-            if "id" in res:
+
+            if "id" not in res:
+                if item_attempt < _ITEM_MAX_RETRIES:
+                    print(f"  No ID returned, retrying in {_ITEM_RETRY_WAIT}s...")
+                    time.sleep(_ITEM_RETRY_WAIT)
+                    continue
+                raise RuntimeError(f"Failed to create item container for {filename}: {res}")
+
+            try:
+                _wait_until_ready(res["id"], LONG_TOKEN)
+                item_ids.append(res["id"])
                 break
-            if item_attempt < _ITEM_MAX_RETRIES:
-                print(f"  Retrying in {_ITEM_RETRY_WAIT}s...")
-                time.sleep(_ITEM_RETRY_WAIT)
-        else:
-            raise RuntimeError(f"Failed to create item container for {filename} after {_ITEM_MAX_RETRIES} attempts: {res}")
-        # Videos need individual processing time before the carousel can be assembled
-        _wait_until_ready(res["id"], LONG_TOKEN)
-        item_ids.append(res["id"])
+            except RuntimeError as e:
+                print(f"  Container processing failed for [{filename}] attempt {item_attempt}: {e}")
+                if item_attempt < _ITEM_MAX_RETRIES:
+                    print(f"  Creating new container in {_ITEM_RETRY_WAIT}s...")
+                    time.sleep(_ITEM_RETRY_WAIT)
+                else:
+                    raise
 
     # Step 2: Create the carousel container
     carousel_payload = {
