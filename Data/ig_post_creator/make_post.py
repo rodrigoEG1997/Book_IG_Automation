@@ -20,10 +20,12 @@ def _create_carousel_video(image_path, song_path, output_path):
         "-i", song_path,
         "-vf", "scale=1080:1350:force_original_aspect_ratio=decrease,"
                "pad=1080:1350:(ow-iw)/2:(oh-ih)/2:color=black",
-        "-c:v", "libx264", "-tune", "stillimage",
+        "-c:v", "libx264", "-profile:v", "high", "-level", "4.0",
+        "-r", "30", "-b:v", "5000k",
         "-c:a", "aac", "-b:a", "192k",
         "-t", str(_CAROUSEL_VIDEO_DURATION), "-shortest",
         "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
         output_path,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)

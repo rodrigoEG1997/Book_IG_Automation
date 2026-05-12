@@ -39,6 +39,7 @@ services:
     - ./Data/media/backgrounds:/app/media/backgrounds
     - ./Data/media/cover_books:/app/media/cover_books
     - ./Data/media/post:/app/media/post
+    - ./Data/media/songs:/app/media/songs
     restart: "no"
 
 volumes:
