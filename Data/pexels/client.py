@@ -6,7 +6,7 @@ class PexelsClient:
     def __init__(self, api_key=PEXELS_API_KEY):
         self.api_key = api_key
 
-    def get(self, endpoint, params=None):
+    def get(self, endpoint, params=None, base_url=None):
 
         if params is None:
             params = {}
@@ -15,7 +15,7 @@ class PexelsClient:
             "Authorization": self.api_key
         }
 
-        url = f"{PEXELS_BASE_URL}/{endpoint}"
+        url = f"{base_url or PEXELS_BASE_URL}/{endpoint}"
 
         logging.info(f"GET {url} - params={params}")
 

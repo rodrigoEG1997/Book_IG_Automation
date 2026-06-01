@@ -1,0 +1,10 @@
+Django>=4.2,<5.0
+mysqlclient>=2.1
+djangorestframework>=3.15
+python-dotenv>=1.0
+django-cors-headers>=4.0
+pytest-django>=4.5
+numpy>=1.24
+faiss-cpu>=1.7
+requests>=2.31
+gunicorn>=21.0

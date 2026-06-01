@@ -13,6 +13,25 @@ PEXELS_IMAGES_QUERY = "background cartoon book coffee reading aesthetic soft col
 PEXELS_ORIENTATION = "portrait"
 BACKGROUND_IMG_PATH = "media/backgrounds/"
 
+PEXELS_VIDEOS_BASE_URL = "https://api.pexels.com/videos"
+PEXELS_TOTAL_VIDEOS = 50
+PEXELS_VIDEOS_PER_PAGE = 20
+PEXELS_VIDEO_MIN_DURATION = 9
+PEXELS_VIDEO_MAX_DURATION = 13
+PEXELS_VIDEO_QUERIES = [
+    "ocean waves",
+    "beach sunset",
+    "forest nature",
+    "waterfall",
+    "mountains landscape",
+    "tropical nature",
+    "river stream",
+    "flowers field",
+    "sunrise sky",
+    "lake reflection",
+]
+BACKGROUND_VIDEO_PATH = "media/videos/"
+
 #OPENLIBRARY VARIABLES
 OPENLIBRARY_BASE_URL = "https://openlibrary.org"
 BOOK_IMG_PATH = "./media/cover_books/"
@@ -93,3 +112,11 @@ POST_BASE_URL=os.environ.get("POST_BASE_URL")
 POST_MEDIA_FOLDER = os.path.join(os.path.dirname(__file__), "..", "media", "post")
 API_VERSION="v25.0"
 IG_USER_ID = os.getenv("INSTAGRAM_USER_ID")
+
+#TIKTOK
+TIKTOK_BASE_URL = "https://open.tiktokapis.com/v2"
+TIKTOK_TOKEN_URL = "https://open.tiktokapis.com/v2/oauth/token/"
+TIKTOK_INIT_URL = f"{TIKTOK_BASE_URL}/post/publish/inbox/video/init/"
+TIKTOK_STATUS_URL = f"{TIKTOK_BASE_URL}/post/publish/status/fetch/"
+TIKTOK_CLIENT_KEY = os.environ.get("TIKTOK_CLIENT_KEY")
+TIKTOK_CLIENT_SECRET = os.environ.get("TIKTOK_CLIENT_SECRET")

@@ -40,7 +40,20 @@ services:
     - ./Data/media/cover_books:/app/media/cover_books
     - ./Data/media/post:/app/media/post
     - ./Data/media/songs:/app/media/songs
+    - ./Data/media/videos:/app/media/videos
     restart: "no"
+
+  backend:
+    build: ./Backend
+    env_file:
+      - .env
+    profiles: ["full-setup", "backend-only"]
+    ports:
+      - "8001:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   mysql_data:

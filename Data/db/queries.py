@@ -91,3 +91,18 @@ def get_long_token(cursor):
     cursor.execute(query)
     result = cursor.fetchone()
     return result[0] if result else None
+
+def get_tiktok_access_token(cursor):
+    cursor.execute("SELECT value FROM Variables WHERE name = 'tiktok_access_token';")
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+def get_tiktok_refresh_token(cursor):
+    cursor.execute("SELECT value FROM Variables WHERE name = 'tiktok_refresh_token';")
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+def update_tiktok_tokens(connection, cursor, access_token, refresh_token):
+    cursor.execute("UPDATE Variables SET value = %s WHERE name = 'tiktok_access_token';", (access_token,))
+    cursor.execute("UPDATE Variables SET value = %s WHERE name = 'tiktok_refresh_token';", (refresh_token,))
+    connection.commit()
