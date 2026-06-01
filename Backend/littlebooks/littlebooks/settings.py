@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('API_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.app', '64.227.36.26']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.app', '64.227.36.26', 'api.rodlittlebooks.com']
 
 
 # Application definition
