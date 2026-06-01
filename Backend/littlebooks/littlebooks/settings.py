@@ -28,6 +28,11 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.app', '64.227.36.26', 'api.rodlittlebooks.com']
 
+CSRF_TRUSTED_ORIGINS = ['https://api.rodlittlebooks.com']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 
 # Application definition
 
