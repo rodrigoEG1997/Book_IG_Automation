@@ -1,6 +1,6 @@
 from ig_post_creator.make_post import make_post
 from ig_connector.post_content import post_book
-from ig_post_creator.make_history import post_story, pick_random_song
+from ig_post_creator.make_history import post_story, post_video_story, pick_random_song
 import os
 import sys
 import time
@@ -12,7 +12,11 @@ from db import queries
 from db.connection import get_connection
 from ig_connector import ig_tokens
 from datetime import datetime
-
+from tiktok_create.long_video import generate_long_video
+from tiktok_create.quote_videos import generate_tiktok_videos
+from tiktok.client import TikTokClient
+from tiktok import helpers as tiktok_helpers
+_BASE = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == "__main__":
 
@@ -59,7 +63,7 @@ if __name__ == "__main__":
         logging.info("Building post content...")
 
         song = pick_random_song(base)
-        content, author, quote = make_post(connection, cursor, base, song)
+        content, author, quote, quotes = make_post(connection, cursor, base, song)
 
         logging.info("Publishing to Instagram...")
         post_id = post_book(content, token)
@@ -68,6 +72,51 @@ if __name__ == "__main__":
         logging.info("Publishing story...")
         post_story(post_id, token, base, author, quote, song)
         logging.info("Story published successfully")
+
+        #New Implementations...
+        time.sleep(2)
+        filename = "history_video"
+        generate_long_video(author, quotes, filename)
+        logging.info("Posting video story to Instagram...")
+        post_video_story(f"{filename}.mp4", token)
+        logging.info("Video story published successfully")
+
+        #Generate videos of tiktok
+        time.sleep(2)
+        output_dir = os.path.join(_BASE, "media", "post", "tiktok")
+        output_paths = generate_tiktok_videos(quotes, author, output_dir)
+
+        #Upload videos to TikTok
+        time.sleep(2)
+        logging.info("Uploading TikTok videos...")
+        refresh_token = queries.get_tiktok_refresh_token(cursor)
+        if not refresh_token:
+            raise ValueError("No TikTok refresh token found in Variables table")
+
+        temp_client = TikTokClient(access_token=None)
+        tiktok_token, new_refresh_token = tiktok_helpers.refresh_tokens(temp_client, refresh_token)
+        if not tiktok_token:
+            raise ValueError("Failed to refresh TikTok tokens")
+
+        queries.update_tiktok_tokens(connection, cursor, tiktok_token, new_refresh_token)
+        logging.info(f"TikTok tokens refreshed. Access token: {tiktok_token[:20]}...")
+
+        tiktok_client = TikTokClient(tiktok_token)
+        for video_path in output_paths:
+            logging.info(f"Uploading to TikTok: {os.path.basename(video_path)}")
+            video_size = os.path.getsize(video_path)
+            publish_id, upload_url = tiktok_helpers.init_upload(tiktok_client, video_size)
+            if not upload_url:
+                logging.error(f"Failed to get upload URL for {os.path.basename(video_path)}, skipping")
+                continue
+            success = tiktok_helpers.upload_video(tiktok_client, upload_url, video_path, video_size)
+            if not success:
+                logging.error(f"Upload failed for {os.path.basename(video_path)}, skipping")
+                continue
+            status = tiktok_helpers.check_status(tiktok_client, publish_id)
+            logging.info(f"{os.path.basename(video_path)} → {status}")
+        
+
 
     except requests.exceptions.RequestException as e:
         logging.error(f"Network error when communicating with the API: {e}")

@@ -19,7 +19,9 @@ class TikTokClient:
         url = f"{self.base_url}/{endpoint}"
         logging.info(f"POST {url}")
         response = requests.post(url, json=body, headers=self._auth_headers(), timeout=TIMEOUT)
-        response.raise_for_status()
+        if not response.ok:
+            logging.error(f"TikTok API error {response.status_code}: {response.text}")
+            response.raise_for_status()
         return response.json()
 
     def refresh_token(self, client_key, client_secret, refresh_token):

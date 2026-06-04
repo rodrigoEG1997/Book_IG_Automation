@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import logging
 import mysql.connector
 from db import queries
@@ -7,8 +8,8 @@ from db.connection import get_connection
 from tiktok.client import TikTokClient
 from tiktok import helpers as tiktok_helpers
 
-_BASE = os.path.dirname(os.path.abspath(__file__))
-VIDEO_PATH = os.path.join(_BASE, "media", "post", "tiktok", "quote_1.mp4")
+_BASE       = os.path.dirname(os.path.abspath(__file__))
+_TIKTOK_DIR = os.path.join(_BASE, "media", "post", "tiktok")
 
 if __name__ == "__main__":
 
@@ -20,9 +21,12 @@ if __name__ == "__main__":
 
     logging.info("Starting TikTok upload")
 
-    if not os.path.exists(VIDEO_PATH):
-        logging.error(f"Video not found: {VIDEO_PATH}")
+    video_files = sorted(glob.glob(os.path.join(_TIKTOK_DIR, "*.mp4")))
+    if not video_files:
+        logging.error(f"No videos found in {_TIKTOK_DIR}")
         sys.exit(1)
+
+    logging.info(f"Found {len(video_files)} video(s) to upload")
 
     connection = None
     try:
@@ -48,23 +52,25 @@ if __name__ == "__main__":
         logging.info(f"Tokens refreshed and saved. Access token: {access_token[:20]}...")
 
         client = TikTokClient(access_token)
-        video_size = os.path.getsize(VIDEO_PATH)
 
-        logging.info(f"Initializing upload: {VIDEO_PATH} ({video_size} bytes)")
-        publish_id, upload_url = tiktok_helpers.init_upload(client, video_size)
+        for video_path in video_files:
+            logging.info(f"Uploading: {os.path.basename(video_path)}")
+            video_size = os.path.getsize(video_path)
 
-        if not upload_url:
-            raise ValueError("Failed to get upload URL from TikTok")
+            publish_id, upload_url = tiktok_helpers.init_upload(client, video_size)
+            if not upload_url:
+                logging.error(f"Failed to get upload URL for {os.path.basename(video_path)}, skipping")
+                continue
 
-        logging.info(f"publish_id: {publish_id}")
-        success = tiktok_helpers.upload_video(client, upload_url, VIDEO_PATH, video_size)
+            logging.info(f"publish_id: {publish_id}")
+            success = tiktok_helpers.upload_video(client, upload_url, video_path, video_size)
 
-        if not success:
-            raise ValueError("Video upload failed")
+            if not success:
+                logging.error(f"Upload failed for {os.path.basename(video_path)}, skipping")
+                continue
 
-        logging.info("Upload successful, checking status...")
-        status = tiktok_helpers.check_status(client, publish_id)
-        logging.info(f"Status: {status}")
+            status = tiktok_helpers.check_status(client, publish_id)
+            logging.info(f"{os.path.basename(video_path)} → Status: {status}")
 
     except ValueError as e:
         logging.error(f"Error: {e}")

@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 import subprocess
@@ -147,6 +148,47 @@ def _get_permalink(post_id, access_token):
     if "permalink" not in res:
         raise RuntimeError(f"Could not fetch permalink for post {post_id}: {res}")
     return res["permalink"]
+
+
+def post_video_story(video_filename, access_token):
+    video_url = POST_BASE_URL + f"{video_filename}?t={int(time.time())}"
+
+    container_payload = {
+        "media_type": "STORIES",
+        "video_url":  video_url,
+        "access_token": access_token,
+    }
+    container = requests.post(
+        f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media",
+        data=container_payload,
+    ).json()
+    logging.info(f"Video story container response: {container}")
+
+    if "id" not in container:
+        raise RuntimeError(f"Failed to create video story container: {container}")
+
+    publish_payload = {
+        "creation_id": container["id"],
+        "access_token": access_token,
+    }
+
+    for attempt in range(1, _STORY_MAX_PUB_TRIES + 1):
+        _wait_until_ready(container["id"], access_token)
+
+        published = requests.post(
+            f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media_publish",
+            data=publish_payload,
+        ).json()
+
+        if "error" not in published:
+            logging.info(f"Video story published: {published}")
+            return published
+
+        logging.warning(f"Video story publish attempt {attempt}/{_STORY_MAX_PUB_TRIES} failed: {published['error']['message']}")
+        if attempt < _STORY_MAX_PUB_TRIES:
+            time.sleep(_STORY_RETRY_WAIT)
+
+    raise RuntimeError(f"Failed to publish video story after {_STORY_MAX_PUB_TRIES} attempts.")
 
 
 def post_story(post_id, access_token, base, author, quote, song_path):

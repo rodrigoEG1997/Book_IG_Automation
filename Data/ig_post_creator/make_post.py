@@ -21,8 +21,8 @@ def _create_carousel_video(image_path, song_path, output_path):
         "-vf", "scale=1080:1350:force_original_aspect_ratio=decrease,"
                "pad=1080:1350:(ow-iw)/2:(oh-ih)/2:color=black",
         "-c:v", "libx264", "-profile:v", "high", "-level", "4.0",
-        "-r", "30", "-b:v", "5000k",
-        "-c:a", "aac", "-b:a", "192k",
+        "-r", "30", "-b:v", "3500k",
+        "-c:a", "aac", "-b:a", "128k",
         "-t", str(_CAROUSEL_VIDEO_DURATION), "-shortest",
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
@@ -127,7 +127,8 @@ def make_post(connection, cursor, base, song_path):
     old_post = os.path.join(base, OUTPUT_POST, "*")
 
     for file in glob.glob(old_post):
-        os.remove(file)
+        if os.path.isfile(file):
+            os.remove(file)
 
     time.sleep(1)
 
@@ -173,4 +174,6 @@ def make_post(connection, cursor, base, song_path):
     queries.update_book_available(connection, cursor, id_book)
     queries.update_background(connection, cursor, num_bg)
 
-    return caption, author['name'], book['quote_1']
+    quotes_list = [book[f"quote_{i}"] for i in range(1, 6) if book.get(f"quote_{i}")]
+
+    return caption, author['name'], book['quote_1'], quotes_list
