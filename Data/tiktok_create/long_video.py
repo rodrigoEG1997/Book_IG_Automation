@@ -217,7 +217,7 @@ def generate_long_video(autor, quotes, filename, output_dir=None):
         fps=30,
         codec="libx264",
         audio_codec="aac",
-        threads=4,
+        threads=2,
         verbose=False,
         logger=None,
     )

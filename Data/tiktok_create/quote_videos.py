@@ -247,7 +247,7 @@ def generate_tiktok_videos(quotes, author, output_dir):
             fps=30,
             codec="libx264",
             audio_codec="aac",
-            threads=4,
+            threads=2,
             verbose=False,
             logger=None,
         )

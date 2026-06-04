@@ -18,6 +18,15 @@ from tiktok.client import TikTokClient
 from tiktok import helpers as tiktok_helpers
 _BASE = os.path.dirname(os.path.abspath(__file__))
 
+
+def _cleanup(*paths):
+    for path in paths:
+        try:
+            if os.path.isfile(path):
+                os.remove(path)
+        except Exception:
+            pass
+
 if __name__ == "__main__":
 
     logging.basicConfig(
@@ -68,18 +77,26 @@ if __name__ == "__main__":
         logging.info("Publishing to Instagram...")
         post_id = post_book(content, token)
         logging.info("Post published successfully")
+        _cleanup(*[os.path.join(base, "media", "post", f) for f in os.listdir(os.path.join(base, "media", "post")) if os.path.isfile(os.path.join(base, "media", "post", f))])
+
         time.sleep(10)
         logging.info("Publishing story...")
         post_story(post_id, token, base, author, quote, song)
         logging.info("Story published successfully")
+        _cleanup(
+            os.path.join(base, "media", "post", "story.png"),
+            os.path.join(base, "media", "post", "story.mp4"),
+        )
 
         #New Implementations...
         time.sleep(2)
         filename = "history_video"
+        long_video_path = os.path.join(_BASE, "media", "post", f"{filename}.mp4")
         generate_long_video(author, quotes, filename)
         logging.info("Posting video story to Instagram...")
         post_video_story(f"{filename}.mp4", token)
         logging.info("Video story published successfully")
+        _cleanup(long_video_path)
 
         #Generate videos of tiktok
         time.sleep(2)
@@ -108,13 +125,16 @@ if __name__ == "__main__":
             publish_id, upload_url = tiktok_helpers.init_upload(tiktok_client, video_size)
             if not upload_url:
                 logging.error(f"Failed to get upload URL for {os.path.basename(video_path)}, skipping")
+                _cleanup(video_path)
                 continue
             success = tiktok_helpers.upload_video(tiktok_client, upload_url, video_path, video_size)
             if not success:
                 logging.error(f"Upload failed for {os.path.basename(video_path)}, skipping")
+                _cleanup(video_path)
                 continue
             status = tiktok_helpers.check_status(tiktok_client, publish_id)
             logging.info(f"{os.path.basename(video_path)} → {status}")
+            _cleanup(video_path)
         
 
 
