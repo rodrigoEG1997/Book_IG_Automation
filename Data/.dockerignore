@@ -1,4 +1,5 @@
 media/
+!media/ig.png
 logs/
 venv/
 __pycache__/
