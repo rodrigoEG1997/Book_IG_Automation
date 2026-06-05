@@ -16,8 +16,8 @@ from moviepy.editor import (
 import moviepy.audio.fx.all as afx
 from config.settings import BACKGROUND_VIDEO_PATH
 
-_TARGET_W         = 1080
-_TARGET_H         = 1920
+_TARGET_W         = 720
+_TARGET_H         = 1280
 _CLIP_DURATION    = 10
 _FONT_SIZE_QUOTE  = 60
 _FONT_SIZE_AUTHOR = 40
