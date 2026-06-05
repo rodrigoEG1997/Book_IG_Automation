@@ -25,6 +25,7 @@ Data/media/post/*
 # Data/media/songs/*
 Data/quote_post.png
 *.png
+!Data/media/ig.png
 *.jpg
 *.jpeg
 *.webp
