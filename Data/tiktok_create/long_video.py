@@ -20,10 +20,10 @@ _TARGET_W         = 720
 _TARGET_H         = 1280
 _CLIP_DURATION    = 10
 _CROSSFADE        = 0.6
-_FONT_SIZE_QUOTE  = 60
-_FONT_SIZE_AUTHOR = 40
-_FONT_SIZE_HANDLE = 36
-_TEXT_MAX_W       = _TARGET_W - 140
+_FONT_SIZE_QUOTE  = 40
+_FONT_SIZE_AUTHOR = 28
+_FONT_SIZE_HANDLE = 24
+_TEXT_MAX_W       = _TARGET_W - 100
 _IG_HANDLE        = "@rod.littlebooks"
 
 _BASE    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
